@@ -2,52 +2,65 @@ from PIL import Image
 from Sosfunctions import check_whether_int
 
 def crop_image(img, oppervlakte=(23, 19)):
-
+    '''
+    
+    This funtion finds coordinates of rectangle with specified parameters on foto.
+    After, coordinates are passed to crop function.
+    Before using you must be sure that foto is processed same way as foto that is used in the example.
+    
+    Parameters:
+        img binary:  Image that are going to be processed. It can be obtained by using PIL module.
+        oppervalkte(optionally) tuple: Tuple that consist 2 arguments: width and hight of rectangle in %.
+    
+    '''
+    
+    # Resizes image and loads pixels of it.
     im = img.resize((img.size[0] // 30,img.size[1] // 30), Image.NEAREST)
     pix = im.load()
+    
+    # Initialisation
     WIDTH = 1.19*oppervlakte[0]
     HIGHT = 0.83*oppervlakte[1]
-    left_top_angle = 0
+    left_top_corner = 0
     grenz = 0
     rect = 0
 
-    #
+    # Iteration through each pixel.
     for y in range(im.size[1]):
         if rect:
             break
-        #
         for x in range(im.size[0]):
-            #
-            if left_top_angle and x < left_top_angle[0]:
+            
+            # if left top corner of rectangle is found
+            if left_top_corner and x < left_top_corner[0]:
                 continue
-            #
+            #Check if pixel is black colour.
             if pix[x, y] < 200:
-                if left_top_angle == 0:
-                    left_top_angle = x, y
-            #
+                #safe coordinates of first black pixel that can be potential left top corner of rectangle
+                if left_top_corner == 0:
+                    left_top_corner = x, y
             else:
-                #
-                if left_top_angle == 0:
+                # if corner wasn't found.
+                if left_top_corner == 0:
                     continue
-                #
+                # First safe of length of rectangle
                 if grenz == 0:
-                    #
-                    if x - left_top_angle[0] >= WIDTH:
+                    if x - left_top_corner[0] >= WIDTH:
                         grenz = x
                         break
                     else:
                         #
-                        left_top_angle = 0
+                        left_top_corner = 0
                         continue
-                #
+                # if grenz 
                 if x < grenz:
                     #
-                    if y - left_top_angle[1] >= HIGHT:
-                        rect = left_top_angle, (grenz - 1, y - 1)
+                    if y - left_top_corner[1] >= HIGHT:
+                        rect = left_top_corner, (grenz - 1, y - 1)
                         break
                     #
                     else:
-                        left_top_angle = 0
+                        left_top_corner = 0
                         grenz = 0
                         continue
                 #
